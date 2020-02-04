@@ -91,6 +91,7 @@ const byte rgb[50][3] = {
     {252, 253, 255},
     {250, 252, 255}
 };
+const byte COLOR_ARRAY_MAX {50};
 
 
 Adafruit_NeoPixel pixels {NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800};
@@ -126,20 +127,28 @@ void alarm()
 
 uint32_t getColor(unsigned long time)
 {
-    float color[3] {};
+    /* Interpolate colors as a function of time
+     * Get time: 0 -> ALARM_SECONDS
+     * color array indices: 0 -> COLOR_ARRAY_MAX
+     */
+    
+    float fraction = (time * COLOR_ARRAY_MAX / ALARM_SECONDS);
+    fraction = fraction - floor(fraction); // 0 -> 1
+    byte lower = floor(fraction);
 
-    for (byte i = 0; i < 3; i++)
-    {
-        byte lower = (byte) ((time * 50 / ALARM_SECONDS) % 2);
-    }
+    byte r = (byte) (rgb[lower][0] * (1.0 - fraction)) + (rgb[lower][0] * fraction);
+    byte g = (byte) (rgb[lower][1] * (1.0 - fraction)) + (rgb[lower][1] * fraction);
+    byte b = (byte) (rgb[lower][2] * (1.0 - fraction)) + (rgb[lower][2] * fraction);
 
-    return Adafruit_NeoPixel::Color((byte) color[0], (byte) color[1], (byte) color[2]);
+    return Adafruit_NeoPixel::Color(r, g, b);
 }
 
 byte getBrightness(unsigned long time)
 {
     // linear approximation, could be improved later
-    float brightness = time * 2.55F / ALARM_SECONDS;
+    // time: 0 -> ALARM_SECONDS
+    // brightness: 0 -> 255
+    float brightness = time * 255.0F / ALARM_SECONDS;
     if (brightness > 255.0f) { brightness = 255.0f; }
     else if (brightness < 0.0f) { brightness = 0.0f; }
     return (byte) brightness;
