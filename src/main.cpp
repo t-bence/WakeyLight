@@ -11,17 +11,22 @@
  * https://github.com/jonls/redshift/blob/master/README-colorramp
  */
 
-#include <Arduino.h>
+#ifdef UNIT_TEST
+    #include "ArduinoFake.h"
+#else
+    #include "Arduino.h"
+#endif
 #include <DS3231.h>
 #include <TimeLib.h>        // http://www.arduino.cc/playground/Code/Time
 #include <Timezone.h>       // https://github.com/JChristensen/Timezone
 #include <Adafruit_NeoPixel.h>
+#include "main.h"
 
 
 // set alarms here
 // an alarm is: day-of-week, hour, minute
 // only one alarm per day!
-byte alarms[7][3] {
+uint8_t alarms[7][3] {
     {Mon, 7, 30},
     {Tue, 7, 30},
     {Wed, 7, 30},
@@ -31,68 +36,8 @@ byte alarms[7][3] {
     {Sun, 8, 0}
 };
 
-const int ALARM_SECONDS = 30 * SECS_PER_MIN;
-
-// other stuff
-
 const int NUM_PIXELS {256};
-const byte LED_PIN {2};
-
-// the array for RGB values
-const byte rgb[50][3] = {
-    {255, 127, 0},
-    {255, 132, 0},
-    {255, 139, 22},
-    {255, 144, 36},
-    {255, 150, 47},
-    {255, 155, 56},
-    {255, 160, 65},
-    {255, 164, 73},
-    {255, 168, 81},
-    {255, 172, 89},
-    {255, 176, 96},
-    {255, 180, 103},
-    {255, 184, 109},
-    {255, 187, 116},
-    {255, 190, 122},
-    {255, 193, 128},
-    {255, 196, 134},
-    {255, 199, 139},
-    {255, 202, 145},
-    {255, 204, 150},
-    {255, 207, 155},
-    {255, 209, 160},
-    {255, 211, 165},
-    {255, 213, 170},
-    {255, 216, 175},
-    {255, 218, 179},
-    {255, 220, 184},
-    {255, 221, 188},
-    {255, 223, 192},
-    {255, 225, 196},
-    {255, 227, 200},
-    {255, 228, 204},
-    {255, 230, 208},
-    {255, 232, 211},
-    {255, 234, 215},
-    {255, 236, 218},
-    {255, 238, 221},
-    {255, 239, 225},
-    {255, 241, 228},
-    {255, 243, 231},
-    {255, 244, 234},
-    {255, 246, 237},
-    {255, 248, 240},
-    {255, 249, 243},
-    {255, 251, 246},
-    {255, 252, 249},
-    {255, 254, 252},
-    {255, 255, 255},
-    {252, 253, 255},
-    {250, 252, 255}
-};
-const byte COLOR_ARRAY_MAX {50};
-
+const uint8_t LED_PIN {2};
 
 Adafruit_NeoPixel pixels {NUM_PIXELS, LED_PIN, NEO_GRB + NEO_KHZ800};
 
@@ -134,16 +79,16 @@ uint32_t getColor(unsigned long time)
     
     float fraction = (time * COLOR_ARRAY_MAX / ALARM_SECONDS);
     fraction = fraction - floor(fraction); // 0 -> 1
-    byte lower = floor(fraction);
+    uint8_t lower = floor(fraction);
 
-    byte r = (byte) (rgb[lower][0] * (1.0 - fraction)) + (rgb[lower][0] * fraction);
-    byte g = (byte) (rgb[lower][1] * (1.0 - fraction)) + (rgb[lower][1] * fraction);
-    byte b = (byte) (rgb[lower][2] * (1.0 - fraction)) + (rgb[lower][2] * fraction);
+    uint8_t r = (uint8_t) (rgb[lower][0] * (1.0 - fraction)) + (rgb[lower][0] * fraction);
+    uint8_t g = (uint8_t) (rgb[lower][1] * (1.0 - fraction)) + (rgb[lower][1] * fraction);
+    uint8_t b = (uint8_t) (rgb[lower][2] * (1.0 - fraction)) + (rgb[lower][2] * fraction);
 
     return Adafruit_NeoPixel::Color(r, g, b);
 }
 
-byte getBrightness(unsigned long time)
+uint8_t getBrightness(unsigned long time)
 {
     // linear approximation, could be improved later
     // time: 0 -> ALARM_SECONDS
@@ -151,7 +96,7 @@ byte getBrightness(unsigned long time)
     float brightness = time * 255.0F / ALARM_SECONDS;
     if (brightness > 255.0f) { brightness = 255.0f; }
     else if (brightness < 0.0f) { brightness = 0.0f; }
-    return (byte) brightness;
+    return (uint8_t) brightness;
 }
 
 void loop() {
@@ -159,7 +104,7 @@ void loop() {
     time_t utc = (time_t) rtc.getUnixTime(rtc.getTime());
     time_t local = hunTZ_.toLocal(utc);
     
-    for (byte alarmIndex = 0; alarmIndex < DAYS_PER_WEEK; alarmIndex++)
+    for (uint8_t alarmIndex = 0; alarmIndex < DAYS_PER_WEEK; alarmIndex++)
     {
         if (alarms[alarmIndex][0] == weekday(local))
         {
