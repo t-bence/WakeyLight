@@ -4,10 +4,10 @@
 #ifndef WAKEYLIGHT_MAIN_H
 #define WAKEYLIGHT_MAIN_H
 
-const int ALARM_SECONDS = 30 * SECS_PER_MIN;
+const uint8_t COLOR_ARRAY_MAX {50};
 
 // the array for RGB values
-const uint8_t rgb[50][3] = {
+const uint8_t rgb[COLOR_ARRAY_MAX][3] = {
     {255, 127, 0},
     {255, 132, 0},
     {255, 139, 22},
@@ -59,7 +59,6 @@ const uint8_t rgb[50][3] = {
     {252, 253, 255},
     {250, 252, 255}
 };
-const uint8_t COLOR_ARRAY_MAX {50};
 
 void setup();
 
